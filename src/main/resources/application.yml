@@ -28,3 +28,6 @@ server:
 app:
   api:
     version: 20250525
+
+polar:
+  catalog-service-url: "http://localhost:9001/20250525"
