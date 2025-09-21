@@ -55,3 +55,33 @@ tasks.named('test') {
 tasks.named('compileJava') {
     dependsOn tasks.named('spotlessApply')
 }
+
+bootBuildImage {
+    //
+    // https://docs.spring.io/spring-boot/gradle-plugin/packaging-oci-image.html#build-image.customization
+    //
+    // https://paketo.io/docs/howto/java/#use-an-alternative-jvm
+    //
+    builder = "paketobuildpacks/builder-noble-java-tiny"
+
+    // https://github.com/paketo-buildpacks/bellsoft-liberica
+    buildpacks = [
+            "paketo-buildpacks/bellsoft-liberica", "paketobuildpacks/java"
+    ]
+
+    imageName = "${project.name}"
+    // https://github.com/paketo-buildpacks/graalvm?tab=readme-ov-file#configuration
+    environment = [
+            "BP_JVM_VERSION": "25.*", //TODO: here we use java 25 but everything else compiled using java 24
+            "BP_JVM_TYPE"   : "JRE",
+    ]
+    //https://docs.spring.io/spring-boot/gradle-plugin/packaging-oci-image.html#build-image.examples.publish
+    docker {
+        publishRegistry {
+            username = project.findProperty("registryUsername")
+            password = project.findProperty("registryToken")
+            url = project.findProperty("registryUrl")
+        }
+    }
+}
+
