@@ -11,6 +11,10 @@ spring:
       max-create-connection-time: 2s
       initial-size: 5
       max-size: 10
+  flyway: # flyway doesn't have support for R2DBC, so we will use JDBC here
+    user: ${spring.r2dbc.username}
+    password: ${spring.r2dbc.password}
+    url: jdbc:postgresql://localhost:5432/order_db
 
 server:
   port: 9002
