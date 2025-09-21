@@ -8,5 +8,7 @@ CREATE TABLE orders
     status             varchar(255)          NOT NULL,
     created_date       timestamp             NOT NULL,
     last_modified_date timestamp             NOT NULL,
-    version            integer               NOT NULL
+    version            integer               NOT NULL,
+    CONSTRAINT check_orders_status
+        CHECK (status IN ('ACCEPTED', 'REJECTED', 'DISPATCHED'))
 );
