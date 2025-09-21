@@ -1,0 +1,73 @@
+#
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
+#
+name: Commit Stage
+
+#
+# Commit Stage main steps:
+#
+# 1. Checkout codebase
+# 2. Scan codebase for vulnerabilities using 'grype'
+# 3. Upload vulnerability report
+# 4. Compile codebase and execute unit and integration tests using 'gradlew'
+# 5. Build container image
+# 6. Uses 'grype' to scan container image
+# 7. Publish container image into Github Container Registry (ghcr.io)
+#
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "*" ]
+
+env:
+  REGISTRY: "ghcr.io"
+  IMAGE_NAME: "polar-bookshop-app/order-service"
+  VERSION: "latest"
+
+jobs:
+
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    #
+    # https://github.com/gradle/actions/blob/main/setup-gradle/README.md
+    #
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup GraalVM 24
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '24'
+          distribution: 'graalvm'
+          cache: gradle
+
+      - name: Code vulnerability scanning
+        uses: anchore/scan-action@v3
+        id: scan
+        with:
+          path: "${{ github.workspace }}"
+          fail-build: false
+          severity-cutoff: high
+          acs-report-enable: true
+
+      - name: Upload vulnerability report
+        uses: github/codeql-action/upload-sarif@v3 # https://github.blog/changelog/2025-01-10-code-scanning-codeql-action-v2-is-now-deprecated/
+        if: success() || failure()
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build, execute unit and integration tests
+        run: |
+          chmod +x gradlew
+          ./gradlew build -i
