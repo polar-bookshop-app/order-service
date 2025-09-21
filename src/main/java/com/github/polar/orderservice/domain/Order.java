@@ -1,5 +1,6 @@
 package com.github.polar.orderservice.domain;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -12,7 +13,7 @@ public record Order(
         @Id Long id,
         String bookIsbn,
         String bookName,
-        Double book_price,
+        BigDecimal bookPrice,
         Integer quantity,
         OrderStatus status,
         @CreatedDate Instant createdDate,
@@ -21,7 +22,7 @@ public record Order(
     public static Order of(
             String bookIsbn,
             String bookName,
-            Double bookPrice,
+            BigDecimal bookPrice,
             Integer quantity,
             OrderStatus status) {
         return new Order(null, bookIsbn, bookName, bookPrice, quantity, status, null, null, 0);

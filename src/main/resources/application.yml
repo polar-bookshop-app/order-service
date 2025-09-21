@@ -6,7 +6,7 @@ spring:
   r2dbc:
     username: order-user
     password: order-password
-    url: r2dbc:postgresql://localhost:5432/order_db
+    url: r2dbc:postgresql://localhost:5433/order_db
     pool:
       max-create-connection-time: 2s
       initial-size: 5
@@ -14,7 +14,7 @@ spring:
   flyway: # flyway doesn't have support for R2DBC, so we will use JDBC here
     user: ${spring.r2dbc.username}
     password: ${spring.r2dbc.password}
-    url: jdbc:postgresql://localhost:5432/order_db
+    url: jdbc:postgresql://localhost:5433/order_db
   webflux:
     base-path: /${app.api.version}
 

@@ -1,6 +1,6 @@
 package com.github.polar.orderservice.domain;
 
-import com.github.polar.orderservice.config.PolarConfig;
+import com.github.polar.orderservice.book.BookClient;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,11 +16,11 @@ public class OrderService {
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final OrderRepository orderRepository;
-    private final PolarConfig polarConfig;
+    private final BookClient bookClient;
 
-    public OrderService(OrderRepository orderRepository, PolarConfig polarConfig) {
+    public OrderService(OrderRepository orderRepository, BookClient bookClient) {
         this.orderRepository = orderRepository;
-        this.polarConfig = polarConfig;
+        this.bookClient = bookClient;
     }
 
     @Transactional
@@ -30,11 +30,19 @@ public class OrderService {
 
     @Transactional
     public Mono<Order> submitOrder(String bookIsbn, Integer quantity) {
-
-        LOGGER.info("HTTP call to {}", polarConfig.catalogServiceUrl());
-
-        // TODO: query catalog-service here
-        var rejectedOrder = Order.of(bookIsbn, null, null, quantity, OrderStatus.REJECTED);
-        return orderRepository.save(rejectedOrder);
+        return bookClient
+                .getBookInfo(bookIsbn)
+                .map(
+                        bookInfo -> {
+                            var order =
+                                    Order.of(
+                                            bookIsbn,
+                                            bookInfo.name(),
+                                            bookInfo.price(),
+                                            quantity,
+                                            OrderStatus.ACCEPTED);
+                            return order;
+                        })
+                .flatMap(orderRepository::save);
     }
 }

@@ -18,7 +18,7 @@ CONTAINER_NAME=order-db
 docker ps -a -q -f name=${CONTAINER_NAME} | grep -q . && docker stop ${CONTAINER_NAME}
 
 docker run --rm -d \
-  --network host \
+  -p 5433:5432 \
   -e POSTGRES_USER=order-user \
   -e POSTGRES_PASSWORD=order-password \
   -e POSTGRES_DB=order_db \
