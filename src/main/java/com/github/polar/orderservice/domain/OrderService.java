@@ -33,16 +33,10 @@ public class OrderService {
         return bookClient
                 .getBookInfo(bookIsbn)
                 .map(
-                        bookInfo -> {
-                            var order =
-                                    Order.of(
-                                            bookIsbn,
-                                            bookInfo.name(),
-                                            bookInfo.price(),
-                                            quantity,
-                                            OrderStatus.ACCEPTED);
-                            return order;
-                        })
+                        bookInfo ->
+                                Order.accepted(
+                                        bookIsbn, bookInfo.name(), bookInfo.price(), quantity))
+                .defaultIfEmpty(Order.rejected(bookIsbn))
                 .flatMap(orderRepository::save);
     }
 }

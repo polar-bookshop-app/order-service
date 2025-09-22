@@ -19,12 +19,14 @@ public record Order(
         @CreatedDate Instant createdDate,
         @LastModifiedDate Instant lastModifiedDate,
         @Version int version) {
-    public static Order of(
-            String bookIsbn,
-            String bookName,
-            BigDecimal bookPrice,
-            Integer quantity,
-            OrderStatus status) {
-        return new Order(null, bookIsbn, bookName, bookPrice, quantity, status, null, null, 0);
+
+    public static Order accepted(
+            String bookIsbn, String bookName, BigDecimal bookPrice, Integer quantity) {
+        return new Order(
+                null, bookIsbn, bookName, bookPrice, quantity, OrderStatus.ACCEPTED, null, null, 0);
+    }
+
+    public static Order rejected(String bookIsbn) {
+        return new Order(null, bookIsbn, null, null, null, OrderStatus.REJECTED, null, null, 0);
     }
 }
