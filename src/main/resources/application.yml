@@ -18,6 +18,12 @@ spring:
   webflux:
     base-path: /${app.api.version}
 
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
 server:
   port: 9002
   netty:

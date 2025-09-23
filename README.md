@@ -22,6 +22,12 @@ Order Service Spring Boot Reactive REST API application.
 ./scripts/run.sh
 ```
 
+* Or with live reloading
+
+```bash
+./gradlew build --continuous & ./gradlew bootRun
+```
+
 ## Docker image
 
 * Create catalog-service docker image using Cloud Native Buildpacks
@@ -53,7 +59,6 @@ grype docker:order-service:latest
 ```
 
 ## K8S and Local Registry
-
 
 If for some reason port-forwarding failed just execute:
 

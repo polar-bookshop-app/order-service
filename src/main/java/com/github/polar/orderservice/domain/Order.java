@@ -26,7 +26,7 @@ public record Order(
                 null, bookIsbn, bookName, bookPrice, quantity, OrderStatus.ACCEPTED, null, null, 0);
     }
 
-    public static Order rejected(String bookIsbn) {
-        return new Order(null, bookIsbn, null, null, null, OrderStatus.REJECTED, null, null, 0);
+    public static Order rejected(String bookIsbn, Integer quantity) {
+        return new Order(null, bookIsbn, null, null, quantity, OrderStatus.REJECTED, null, null, 0);
     }
 }

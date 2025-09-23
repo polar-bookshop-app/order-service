@@ -30,13 +30,21 @@ public class OrderService {
 
     @Transactional
     public Mono<Order> submitOrder(String bookIsbn, Integer quantity) {
-        return bookClient
-                .getBookInfo(bookIsbn)
-                .map(
-                        bookInfo ->
-                                Order.accepted(
-                                        bookIsbn, bookInfo.name(), bookInfo.price(), quantity))
-                .defaultIfEmpty(Order.rejected(bookIsbn))
-                .flatMap(orderRepository::save);
+        var resultMono = bookClient.getBookInfo(bookIsbn);
+
+        var orderMono =
+                resultMono.map(
+                        result -> {
+                            if (result.isOk()) {
+                                BookInfo bookInfo = result.ok();
+                                return Order.accepted(
+                                        bookIsbn, bookInfo.name(), bookInfo.price(), quantity);
+                            } else {
+                                LOGGER.warn("Book info failed with {}", result.err().description());
+                                return Order.rejected(bookIsbn, quantity);
+                            }
+                        });
+
+        return orderMono.flatMap(orderRepository::save);
     }
 }
