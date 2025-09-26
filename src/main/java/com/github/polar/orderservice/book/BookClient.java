@@ -36,6 +36,13 @@ public class BookClient {
          */
         final long retryCount = 3L;
         final long retryExponentialBackoffDelay = 100L;
+        final long wholeCallDuration = 2000L;
+        final long maxPossibleCallDelay = wholeCallDuration / (retryCount + 1);
+
+        //        LOGGER.info("retryCount: {}", retryCount);
+        //        LOGGER.info("retryExponentialBackoffDelay: {}", retryExponentialBackoffDelay);
+        //        LOGGER.info("wholeCallDuration: {}", wholeCallDuration);
+        //        LOGGER.info("maxPossibleCallDelay: {}", maxPossibleCallDelay);
 
         Mono<BookInfo> bookInfoMono =
                 webClient
@@ -48,24 +55,24 @@ public class BookClient {
         Mono<Result<BookInfo, BookInfoError>> bookInfoRes =
                 bookInfoMono.flatMap(bookInfo -> Mono.just(Result.ok(bookInfo)));
 
-        // Handle 'NotFound', no retry
+        // If 'NotFound' http code, just return error without retry
         bookInfoRes =
                 bookInfoRes.onErrorResume(
                         WebClientResponseException.NotFound.class,
                         ex -> Mono.just(Result.error(new BookInfoError("Book Not Found"))));
 
         // Timeout for a SINGLE retry
-        bookInfoRes =
-                bookInfoRes.timeout(
-                        Duration.ofMillis(
-                                calculateMaxPossibleDelay(
-                                        retryCount, retryExponentialBackoffDelay)),
-                        Mono.just(Result.error(new BookInfoError("Retry Timed Out"))));
+        bookInfoRes = bookInfoRes.timeout(Duration.ofMillis(maxPossibleCallDelay));
 
-        // Retry, exponential backoff
+        // Retry, exponential backoff strategy
         bookInfoRes =
                 bookInfoRes.retryWhen(
                         Retry.backoff(retryCount, Duration.ofMillis(retryExponentialBackoffDelay)));
+
+        bookInfoRes =
+                bookInfoRes.timeout(
+                        Duration.ofMillis(wholeCallDuration),
+                        Mono.just(Result.error(new BookInfoError("Call Timed Out"))));
 
         // Handle generic Exception
         bookInfoRes =
